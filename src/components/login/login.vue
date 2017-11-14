@@ -4,7 +4,7 @@
       <div class="close" @click="close">
         <i class="iconfont icon-guanbi"></i>
       </div>
-      <h1 class="title">登录</h1>
+      <h1 class="head_title">登录</h1>
       <div class="logo">
         <span>至元操盘</span>
       </div>
@@ -30,7 +30,7 @@
 <script type="text/ecmascript-6">
   import {regexConfig} from 'common/js/util'
   import { MessageBox } from 'mint-ui'
-  import {logIn} from 'api/login'
+  import {userLogin} from 'api/api'
 
   export default{
     name: 'login',
@@ -76,15 +76,26 @@
         }
       },
       mySubmit(param) {
-        let mobile = param.mobile.trim()
-        let password = param.password.trim()
-        logIn(mobile, password)
+        let userInfo = {
+          phone: param.mobile.trim(),
+          pwd: param.password.trim()
+        }
+        userLogin(this, userInfo).then(res => {
+          if (!res.ret) {
+            MessageBox('提示', res.msg)
+            return false
+          }
+          console.log(res)
+          this.$router.push({
+            path: `/productList`
+          })
+        })
       }
     }
   }
 </script>
 
-<style scoped  lang="scss">
+<style scoped lang="scss">
   .login {
     position: fixed;
     top: 0;
@@ -105,7 +116,7 @@
       color: #212121;
     }
   }
-  .title {
+  .head_title {
     line-height: 40px;
     text-align: left;
     font-size: 18px;

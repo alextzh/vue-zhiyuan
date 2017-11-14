@@ -32,10 +32,11 @@ module.exports = {
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
     proxyTable: {
-      '/logIn': {
+      '/api': {
         target: 'https://www.yanysdd.com',
+        changeOrigin: true,
         pathRewrite: {
-          '^/logIn': '/logIn'
+          '^/api': '/api/v1'
         }
       }
     },

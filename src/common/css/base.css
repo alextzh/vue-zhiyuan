@@ -25,3 +25,16 @@ button:active{
   background: rgba(244,67,54,.5);
   color: #fff;
 }
+.no_data{
+  position:fixed;
+  top:0;
+  bottom:0;
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.no_data i{
+  font-size:100px;
+  color: #999999;
+}
