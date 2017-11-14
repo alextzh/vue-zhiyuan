@@ -5,10 +5,18 @@
         <i class="iconfont icon-guanbi"></i>
       </div>
       <h1 class="head_title">产品列表</h1>
-      <div class="list" :style="{'-webkit-overflow-scrolling': scrollMode}">
-        <template v-if="productList.length > 0">
-          <v-loadmore :top-method="loadTop" :bottom-method="loadBottom" :bottom-all-loaded="allLoaded" :auto-fill="false" ref="loadmore">
-            <div class="item" v-for="(item, index) in productList" :key="index">
+      <div class="list">
+        <scroll ref="scroll" class="scroll_list"
+                v-if="productList.length > 0"
+                :data="productList"
+                :scrollbar="scrollbarObj"
+                :pullDownRefresh="pullDownRefreshObj"
+                :pullUpLoad="pullUpLoadObj"
+                :startY="parseInt(startY)"
+                @pullingDown="onPullingDown"
+                @pullingUp="onPullingUp">
+          <ul>
+            <li class="item" v-for="(item, index) in productList" :key="index">
               <div class="item_head">
                 <i class="iconfont icon-item"></i>
                 <span class="title">{{item.name}}</span>
@@ -43,21 +51,22 @@
                 <span>结算时间：</span>
                 <span>{{item.settlement_time}}</span>
               </div>
-            </div>
-          </v-loadmore>
-        </template>
-        <template v-if="hasData">
+            </li>
+          </ul>
+        </scroll>
+        <div v-if="hasData">
           <div class="no_data">
             <i class="iconfont icon-nodata"></i>
           </div>
-        </template>
+        </div>
       </div>
     </div>
   </transition>
 </template>
 
 <script type="text/ecmascript-6">
-  import { MessageBox, Loadmore } from 'mint-ui'
+  import Scroll from 'base/scroll/scroll'
+  import { MessageBox, Indicator } from 'mint-ui'
   import {rendererZhMoneyWan, _normalizeDate} from 'common/js/util'
   import {getProductList} from 'api/api'
 
@@ -68,12 +77,41 @@
         productList: [],
         pageData: {
           page: 1,
-          rows: 2
+          rows: 5
         },
-        allLoaded: false, // 是否可以上拉属性，false可以上拉，true为禁止上拉，就是不让往上划加载数据了
-        scrollMode: 'auto', // 移动端弹性滚动效果，touch为弹性滚动，auto是非弹性滚动
-        hasData: false
+        scrollbar: true,
+        scrollbarFade: true,
+        pullDownRefresh: true,
+        pullDownRefreshThreshold: 90,
+        pullDownRefreshStop: 40,
+        pullUpLoad: true,
+        pullUpLoadThreshold: 0,
+        pullUpLoadMoreTxt: '加载更多',
+        pullUpLoadNoMoreTxt: '没有更多数据了',
+        startY: 0,
+        hasData: false,
+        hasMore: true
       }
+    },
+    computed: {
+      scrollbarObj: function () {
+        return this.scrollbar ? {fade: this.scrollbarFade} : false
+      },
+      pullDownRefreshObj: function () {
+        return this.pullDownRefresh ? {
+          threshold: parseInt(this.pullDownRefreshThreshold),
+          stop: parseInt(this.pullDownRefreshStop)
+        } : false
+      },
+      pullUpLoadObj: function () {
+        return this.pullUpLoad ? {
+          threshold: parseInt(this.pullUpLoadThreshold),
+          txt: {more: this.pullUpLoadMoreTxt, noMore: this.pullUpLoadNoMoreTxt}
+        } : false
+      }
+    },
+    created() {
+      Indicator.open('加载中...')
     },
     mounted() {
       this.$nextTick(() => {
@@ -82,56 +120,48 @@
     },
     methods: {
       close() {
-        console.log('111')
+        sessionStorage.clear()
+        this.$router.push({
+          path: '/login'
+        })
       },
       _getProductList() {
         getProductList(this, this.pageData).then((res) => {
+          Indicator.close()
           if (!res.ret) {
             MessageBox('提示', res.msg)
             this.hasData = true
             return false
           }
-          this.isHaveMore(res.obj.totalPage)
-          let list = res.obj.list
-          this.productList = this._normalizeList(list)
-          this.$nextTick(function () {
-            // 原意是DOM更新循环结束时调用延迟回调函数，大意就是DOM元素在因为某些原因要进行修改就在这里写，要在修改某些数据后才能写
-            // 这里之所以加是因为有个坑，iphone在使用-webkit-overflow-scrolling属性，就是移动端弹性滚动效果时会屏蔽loadmore的上拉加载效果
-            // 花了好久才解决这个问题，就是用这个函数，意思就是先设置属性为auto，正常滑动，加载完数据后改成弹性滑动，安卓没有这个问题，移动端弹性滑动体验会更好
-            this.scrollMode = 'touch'
-          })
-        })
-      },
-      _getMoreProductList() {
-        this.pageData.page = this.pageData.page + 1
-        getProductList(this, this.pageData).then((res) => {
-          if (!res.ret) {
-            MessageBox('提示', res.msg)
-            this.hasData = true
-            return false
-          }
-          // 是否还有下一页，加个方法判断，没有下一页要禁止上拉
-          this.isHaveMore(res.obj.totalPage)
+          let totalPage = res.obj.totalPage
           let list = res.obj.list
           this.productList = this.productList.concat(this._normalizeList(list))
+          this.pageData.page++
+          if (this.pageData.page > totalPage) {
+            this.hasMore = false
+          }
         })
       },
-      loadTop() { // 组件提供的下拉触发方法
-        // 下拉加载
+      onPullingDown() {
+        // 更新数据
+        this.pageData.page = 1
+        this.productList = []
+        this.hasMore = true
         this._getProductList()
-        this.$refs.loadmore.onTopLoaded() // 固定方法，查询完要调用一次，用于重新定位
       },
-      loadBottom() {
-        // 上拉加载
-        this._getMoreProductList() // 上拉触发的分页查询
-        this.$refs.loadmore.onBottomLoaded() // 固定方法，查询完要调用一次，用于重新定位
-      },
-      isHaveMore(totalPage) {
-        // 是否还有下一页，如果没有就禁止上拉刷新
-        this.allLoaded = true // true是禁止上拉加载
-        if (this.pageData.page > totalPage) {
-          this.allLoaded = false
+      onPullingUp() {
+        // 加载更多数据
+        if (!this.hasMore) {
+          this.$refs.scroll.forceUpdate()
+          return false
         }
+        this._getProductList()
+      },
+      rebuildScroll() {
+        this.nextTick(() => {
+          this.$refs.scroll.destroy()
+          this.$refs.scroll.initScroll()
+        })
       },
       _normalizeList(list) {
         if (list === []) {
@@ -145,8 +175,31 @@
         }
       }
     },
+    watch: {
+      scrollbarObj: {
+        handler() {
+          this.rebuildScroll()
+        },
+        deep: true
+      },
+      pullDownRefreshObj: {
+        handler() {
+          this.rebuildScroll()
+        },
+        deep: true
+      },
+      pullUpLoadObj: {
+        handler() {
+          this.rebuildScroll()
+        },
+        deep: true
+      },
+      startY() {
+        this.rebuildScroll()
+      }
+    },
     components: {
-      'v-loadmore': Loadmore
+      Scroll
     }
   }
 </script>
@@ -181,9 +234,15 @@
     color: #fff;
   }
   .list{
-    display: flex;
-    flex-direction:column;
+    position: fixed;
+    top: 40px;
+    bottom: 50px;
     width: 100%;
+    overflow: hidden;
+  }
+  .scroll_list{
+    height:100%;
+    overflow: hidden;
   }
   .item{
     position:relative;

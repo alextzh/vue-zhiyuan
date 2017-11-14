@@ -4,7 +4,6 @@ import App from './App'
 import router from './router'
 import fastclick from 'fastclick'
 import Mint from 'mint-ui'
-import VueResource from 'vue-resource'
 import {post, get, patch, put} from './util/http'
 import {Cookie} from './util/cookie'
 
@@ -14,7 +13,6 @@ import 'mint-ui/lib/style.css'
 fastclick.attach(document.body)
 
 Vue.use(Mint)
-Vue.use(VueResource)
 
 Vue.prototype.$post = post
 Vue.prototype.$get = get

@@ -85,7 +85,12 @@
             MessageBox('提示', res.msg)
             return false
           }
-          console.log(res)
+          let cInfo = {
+            id: res.obj.id,
+            name: res.obj.name,
+            phone: userInfo.phone
+          }
+          sessionStorage.setItem('cInfo', JSON.stringify(cInfo))
           this.$router.push({
             path: `/productList`
           })
