@@ -2,9 +2,6 @@
   <div ref="wrapper" class="list-wrapper">
     <div class="scroll-content">
       <slot>
-        <ul ref="list" class="list-content">
-          <li @click="clickItem($event,item)" class="list-item" v-for="item in data">{{item}}</li>
-        </ul>
       </slot>
       <slot name="pullup"
             :pullUpLoad="pullUpLoad"
@@ -46,12 +43,12 @@
   import BScroll from 'better-scroll'
   import Loading from 'base/loading/loading'
   import Bubble from 'base/bubble/bubble'
-  import {getRect} from 'common/js/dom'
-
+  import { getRect } from 'common/js/dom'
+  const COMPONENT_NAME = 'scroll'
   const DIRECTION_H = 'horizontal'
   const DIRECTION_V = 'vertical'
-
   export default {
+    name: COMPONENT_NAME,
     props: {
       data: {
         type: Array,
@@ -118,7 +115,7 @@
     computed: {
       pullUpTxt() {
         const moreTxt = (this.pullUpLoad && this.pullUpLoad.txt && this.pullUpLoad.txt.more) || '加载更多'
-        const noMoreTxt = (this.pullUpLoad && this.pullUpLoad.txt && this.pullUpLoad.txt.noMore) || '没有更多数据了'
+        const noMoreTxt = (this.pullUpLoad && this.pullUpLoad.txt && this.pullUpLoad.txt.noMore) || '没有更多了'
         return this.pullUpDirty ? moreTxt : noMoreTxt
       },
       refreshTxt() {
@@ -272,7 +269,11 @@
     right: 0;
     bottom: 0;
     overflow: hidden;
-    background: #f4f4f4;
+    background: #fff;
+    .scroll-content{
+      position: relative;
+      z-index: 1;
+    }
   }
   .pulldown-wrapper{
     position: absolute;
@@ -291,6 +292,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 16px 0;
+    padding-top: 6px;
+    padding-bottom: 24px;
   }
 </style>

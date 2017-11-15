@@ -1,23 +1,20 @@
 <template>
-  <div class="loading">
-    <img width="24" height="24" src="./loading.gif" alt="">
+  <div class="mf-loading-container">
+    <img src="./loading.gif">
   </div>
 </template>
-
 <script type="text/ecmascript-6">
+  const COMPONENT_NAME = 'loading'
   export default {
-    props: {
-      title: {
-        type: String,
-        default: ''
-      }
-    }
+    name: COMPONENT_NAME
   }
 </script>
-
-<style scoped lang="scss">
-  .loading{
-    width: 100%;
-    text-align: center;
+<style lang="scss">
+  .mf-loading-container{
+    img{
+      width: 20px;
+      height: 20px;
+      display: block;
+    }
   }
 </style>

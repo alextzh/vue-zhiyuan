@@ -1,10 +1,28 @@
 <template>
-  <div>申购记录</div>
+  <transition name="slide">
+    <navbar title="申购记录" @back="back" @close="close"></navbar>
+  </transition>
 </template>
 
 <script type="text/ecmascript-6">
-  export default{
-    name: 'purchaseRecord'
+  import Navbar from 'base/navbar/navbar'
+
+  export default {
+    name: 'purchaseRecord',
+    methods: {
+      back() {
+        this.$router.back()
+      },
+      close() {
+        sessionStorage.clear()
+        this.$router.push({
+          path: '/login'
+        })
+      }
+    },
+    components: {
+      Navbar
+    }
   }
 </script>
 

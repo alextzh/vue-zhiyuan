@@ -1,10 +1,7 @@
 <template>
   <transition name="slide">
-    <div class="login">
-      <div class="close" @click="close">
-        <i class="iconfont icon-guanbi"></i>
-      </div>
-      <h1 class="head_title">登录</h1>
+    <div class="m-container">
+      <navbar title="登录" :showBack="showBack" :styleObj="styleObj" @close="close"></navbar>
       <div class="logo">
         <span>至元操盘</span>
       </div>
@@ -28,6 +25,7 @@
 </template>
 
 <script type="text/ecmascript-6">
+  import Navbar from 'base/navbar/navbar'
   import {regexConfig} from 'common/js/util'
   import { MessageBox } from 'mint-ui'
   import {userLogin} from 'api/api'
@@ -36,6 +34,11 @@
     name: 'login',
     data() {
       return {
+        showBack: false,
+        styleObj: {
+          color: '#212121',
+          background: '#ffffff'
+        },
         user: {
           mobile: '',
           password: ''
@@ -96,36 +99,21 @@
           })
         })
       }
+    },
+    components: {
+      Navbar
     }
   }
 </script>
 
 <style scoped lang="scss">
-  .login {
+  .m-container {
     position: fixed;
     top: 0;
     bottom: 0;
     z-index: 100;
     width: 100%;
     background: #fff;
-  }
-  .close {
-    position:absolute;
-    top: 0;
-    left: 6px;
-    z-index: 50;
-    .icon-guanbi {
-      display: block;
-      padding: 10px;
-      font-size: 18px;
-      color: #212121;
-    }
-  }
-  .head_title {
-    line-height: 40px;
-    text-align: left;
-    font-size: 18px;
-    padding: 0 50px;
   }
   .logo{
     margin-top: 50px;
@@ -171,11 +159,5 @@
   .btn_area{
     width:90%;
     margin: 0 auto;
-  }
-  .slide-enter-active, .slide-leave-active {
-    transition: all 0.3s;
-  }
-  .slide-enter, .slide-leave-to {
-    transform: translate3d(100%, 0, 0);
   }
 </style>

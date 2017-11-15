@@ -1,10 +1,7 @@
 <template>
   <transition name="slide">
-    <div class="product-list">
-      <div class="close" @click="close">
-        <i class="iconfont icon-guanbi"></i>
-      </div>
-      <h1 class="head_title">产品列表</h1>
+    <div class="m-container">
+      <navbar title="产品列表" :showBack="showBack" @close="close"></navbar>
       <div class="list">
         <scroll ref="scroll" class="scroll_list"
                 v-if="productList.length > 0"
@@ -60,12 +57,15 @@
           </div>
         </div>
       </div>
+      <tabbar></tabbar>
     </div>
   </transition>
 </template>
 
 <script type="text/ecmascript-6">
   import Scroll from 'base/scroll/scroll'
+  import Tabbar from 'base/tabbar/tabbar'
+  import Navbar from 'base/navbar/navbar'
   import { MessageBox, Indicator } from 'mint-ui'
   import {rendererZhMoneyWan, _normalizeDate} from 'common/js/util'
   import {getProductList} from 'api/api'
@@ -74,6 +74,8 @@
     name: 'productList',
     data() {
       return {
+        showBack: false,
+        select: 'tab1',
         productList: [],
         pageData: {
           page: 1,
@@ -83,7 +85,7 @@
         scrollbarFade: true,
         pullDownRefresh: true,
         pullDownRefreshThreshold: 90,
-        pullDownRefreshStop: 40,
+        pullDownRefreshStop: 60,
         pullUpLoad: true,
         pullUpLoadThreshold: 0,
         pullUpLoadMoreTxt: '加载更多',
@@ -100,7 +102,8 @@
       pullDownRefreshObj: function () {
         return this.pullDownRefresh ? {
           threshold: parseInt(this.pullDownRefreshThreshold),
-          stop: parseInt(this.pullDownRefreshStop)
+          stop: parseInt(this.pullDownRefreshStop),
+          txt: {more: this.pullUpLoadMoreTxt, noMore: this.pullUpLoadNoMoreTxt}
         } : false
       },
       pullUpLoadObj: function () {
@@ -157,12 +160,6 @@
         }
         this._getProductList()
       },
-      rebuildScroll() {
-        this.nextTick(() => {
-          this.$refs.scroll.destroy()
-          this.$refs.scroll.initScroll()
-        })
-      },
       _normalizeList(list) {
         if (list === []) {
           return []
@@ -175,63 +172,22 @@
         }
       }
     },
-    watch: {
-      scrollbarObj: {
-        handler() {
-          this.rebuildScroll()
-        },
-        deep: true
-      },
-      pullDownRefreshObj: {
-        handler() {
-          this.rebuildScroll()
-        },
-        deep: true
-      },
-      pullUpLoadObj: {
-        handler() {
-          this.rebuildScroll()
-        },
-        deep: true
-      },
-      startY() {
-        this.rebuildScroll()
-      }
-    },
     components: {
-      Scroll
+      Scroll,
+      Tabbar,
+      Navbar
     }
   }
 </script>
 
 <style scoped lang="scss">
-  .product-list {
+  .m-container {
     position: fixed;
     top: 0;
     bottom: 0;
     z-index: 100;
     width: 100%;
-    background: #fff;
-  }
-  .close {
-    position:absolute;
-    top: 0;
-    left: 6px;
-    z-index: 50;
-    .icon-guanbi {
-      display: block;
-      padding: 10px;
-      font-size: 18px;
-      color: #fff;
-    }
-  }
-  .head_title {
-    line-height: 40px;
-    text-align: left;
-    font-size: 18px;
-    padding: 0 50px;
-    background: #F44336;
-    color: #fff;
+    background: #f4f4f4;
   }
   .list{
     position: fixed;
