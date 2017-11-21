@@ -27,7 +27,7 @@
 <script type="text/ecmascript-6">
   import Navbar from 'base/navbar/navbar'
   import {regexConfig} from 'common/js/util'
-  import { MessageBox } from 'mint-ui'
+  import { MessageBox, Toast } from 'mint-ui'
   import {userLogin} from 'api/api'
 
   export default{
@@ -93,7 +93,10 @@
             name: res.obj.name,
             phone: userInfo.phone
           }
-          sessionStorage.setItem('cInfo', JSON.stringify(cInfo))
+          sessionStorage.setItem('userInfo', JSON.stringify(cInfo))
+          Toast({
+            message: '登录成功'
+          })
           this.$router.push({
             path: `/productList`
           })
@@ -141,6 +144,8 @@
     align-items: center;
     i{
       position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
       font-size: 18px;
       color: #F44336;
       z-index:1;

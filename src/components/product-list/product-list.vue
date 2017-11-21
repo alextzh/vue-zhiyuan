@@ -5,51 +5,48 @@
       <div class="list">
         <scroll ref="scroll" class="scroll_list"
                 v-if="productList.length > 0"
-                :data="productList"
                 :scrollbar="scrollbarObj"
                 :pullDownRefresh="pullDownRefreshObj"
                 :pullUpLoad="pullUpLoadObj"
                 :startY="parseInt(startY)"
                 @pullingDown="onPullingDown"
                 @pullingUp="onPullingUp">
-          <ul>
-            <li class="item" v-for="(item, index) in productList" :key="index">
-              <div class="item_head">
-                <i class="iconfont icon-item"></i>
-                <span class="title">{{item.name}}</span>
-                <span class="item_state" style='color: #2196F3;' v-if="item.status === '已发布'">{{item.status}}</span>
-                <span class="item_state" style='color: #4527a0;' v-if="item.status === '申购中'">{{item.status}}</span>
-                <span class="item_state" style='color: #e91e63;' v-if="item.status === '申购结束'">{{item.status}}</span>
-                <span class="item_state" style='color: #F44336;' v-if="item.status === '操盘中'">{{item.status}}</span>
+          <li class="item" v-for="(item, index) in productList" :key="index">
+            <div class="item_head">
+              <i class="iconfont icon-item"></i>
+              <span class="title">{{item.name}}</span>
+              <span class="item_state" style='color: #2196F3;' v-if="item.status === '已发布'">{{item.status}}</span>
+              <span class="item_state" style='color: #4527a0;' v-if="item.status === '申购中'">{{item.status}}</span>
+              <span class="item_state" style='color: #e91e63;' v-if="item.status === '申购结束'">{{item.status}}</span>
+              <span class="item_state" style='color: #F44336;' v-if="item.status === '操盘中'">{{item.status}}</span>
+            </div>
+            <div class="item_body">
+              <div class="item__left">
+                <span>预融份额：</span>
+                <span class="new_data">{{item.expect_quota}}万份</span>
               </div>
-              <div class="item_body">
-                <div class="item__left">
-                  <span>预融份额：</span>
-                  <span class="new_data">{{item.expect_quota}}万份</span>
-                </div>
-                <div class="item__right">
-                  <span>最大申购人数：</span>
-                  <span class="all_data">{{item.max_amount}}</span>
-                </div>
+              <div class="item__right">
+                <span>最大申购人数：</span>
+                <span class="all_data">{{item.max_amount}}</span>
               </div>
-              <div class="item_foot" v-if="item.status !== '操盘中'">
-                <span>申购起始时间：</span>
-                <span>{{item.start_datetime}}</span>
-              </div>
-              <div class="item_foot" v-if="item.status !== '操盘中'">
-                <span>申购结束时间：</span>
-                <span>{{item.end_datetime}}</span>
-              </div>
-              <div class="item_foot">
-                <span>操盘时间：</span>
-                <span>{{item.caopan_time}}</span>
-              </div>
-              <div class="item_foot">
-                <span>结算时间：</span>
-                <span>{{item.settlement_time}}</span>
-              </div>
-            </li>
-          </ul>
+            </div>
+            <div class="item_foot" v-if="item.status !== '操盘中'">
+              <span>申购起始时间：</span>
+              <span>{{item.start_datetime}}</span>
+            </div>
+            <div class="item_foot" v-if="item.status !== '操盘中'">
+              <span>申购结束时间：</span>
+              <span>{{item.end_datetime}}</span>
+            </div>
+            <div class="item_foot">
+              <span>操盘时间：</span>
+              <span>{{item.caopan_time}}</span>
+            </div>
+            <div class="item_foot">
+              <span>结算时间：</span>
+              <span>{{item.settlement_time}}</span>
+            </div>
+          </li>
         </scroll>
         <div v-if="hasData">
           <div class="no_data">
@@ -66,7 +63,7 @@
   import Scroll from 'base/scroll/scroll'
   import Tabbar from 'base/tabbar/tabbar'
   import Navbar from 'base/navbar/navbar'
-  import { MessageBox, Indicator } from 'mint-ui'
+  import { MessageBox } from 'mint-ui'
   import {rendererZhMoneyWan, _normalizeDate} from 'common/js/util'
   import {getProductList} from 'api/api'
 
@@ -102,8 +99,7 @@
       pullDownRefreshObj: function () {
         return this.pullDownRefresh ? {
           threshold: parseInt(this.pullDownRefreshThreshold),
-          stop: parseInt(this.pullDownRefreshStop),
-          txt: {more: this.pullUpLoadMoreTxt, noMore: this.pullUpLoadNoMoreTxt}
+          stop: parseInt(this.pullDownRefreshStop)
         } : false
       },
       pullUpLoadObj: function () {
@@ -114,7 +110,6 @@
       }
     },
     created() {
-      Indicator.open('加载中...')
     },
     mounted() {
       this.$nextTick(() => {
@@ -129,8 +124,28 @@
         })
       },
       _getProductList() {
+        this.pageData.page = 1
+        this.hasMore = true
         getProductList(this, this.pageData).then((res) => {
-          Indicator.close()
+          if (!res.ret) {
+            MessageBox('提示', res.msg)
+            this.hasData = true
+            return false
+          }
+          let list = res.obj.list
+          let totalPage = res.obj.totalPage
+          this.productList = this._normalizeList(list)
+          if ((this.pageData.page + 1) > totalPage) {
+            this.hasMore = false
+          }
+          this.$nextTick(() => {
+            this.$refs.scroll.forceUpdate()
+          })
+        })
+      },
+      _getMoreProductList() {
+        this.pageData.page = this.pageData.page + 1
+        getProductList(this, this.pageData).then((res) => {
           if (!res.ret) {
             MessageBox('提示', res.msg)
             this.hasData = true
@@ -139,17 +154,16 @@
           let totalPage = res.obj.totalPage
           let list = res.obj.list
           this.productList = this.productList.concat(this._normalizeList(list))
-          this.pageData.page++
-          if (this.pageData.page > totalPage) {
+          if ((this.pageData.page + 1) > totalPage) {
             this.hasMore = false
           }
+          this.$nextTick(() => {
+            this.$refs.scroll.forceUpdate()
+          })
         })
       },
       onPullingDown() {
         // 更新数据
-        this.pageData.page = 1
-        this.productList = []
-        this.hasMore = true
         this._getProductList()
       },
       onPullingUp() {
@@ -158,7 +172,7 @@
           this.$refs.scroll.forceUpdate()
           return false
         }
-        this._getProductList()
+        this._getMoreProductList()
       },
       _normalizeList(list) {
         if (list === []) {
@@ -194,10 +208,6 @@
     top: 40px;
     bottom: 50px;
     width: 100%;
-    overflow: hidden;
-  }
-  .scroll_list{
-    height:100%;
     overflow: hidden;
   }
   .item{

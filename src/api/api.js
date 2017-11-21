@@ -16,7 +16,7 @@ export function getProductList(context, data) {
 }
 // 申购记录 请求参数page:1, rows:10, customer_id:用户id, status:申购状态（区分申购的产品）
 export function getPurchaseList(context, data) {
-  const url = debug ? '/product/mySubscribes' : 'https://www.yanysdd.com/api/v1/product/mySubscribes'
+  const url = debug ? '/subscribe/mySubscribes' : 'https://www.yanysdd.com/api/v1/subscribe/mySubscribes'
   data = paramData(data)
   return context.$post(url, data)
 }

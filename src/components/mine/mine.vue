@@ -72,15 +72,15 @@
         console.log('111')
       },
       getUserInfo() {
-        if (!sessionStorage.getItem('cInfo')) {
+        if (!sessionStorage.getItem('userInfo')) {
           this.$router.push({
             path: '/login'
           })
           return false
         }
-        let cInfo = JSON.parse(sessionStorage.getItem('cInfo'))
-        this.username = cInfo.name
-        this.mobile = cInfo.phone
+        let userInfo = JSON.parse(sessionStorage.getItem('userInfo'))
+        this.username = userInfo.name
+        this.mobile = userInfo.phone
       }
     },
     components: {

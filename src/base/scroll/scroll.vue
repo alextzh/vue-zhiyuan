@@ -1,8 +1,10 @@
 <template>
   <div ref="wrapper" class="list-wrapper">
     <div class="scroll-content">
-      <slot>
-      </slot>
+      <ul class="list-content" ref="list">
+        <slot>
+        </slot>
+      </ul>
       <slot name="pullup"
             :pullUpLoad="pullUpLoad"
             :isPullUpLoad="isPullUpLoad"
@@ -106,6 +108,7 @@
         beforePullDown: true,
         isRebounding: false,
         isPullingDown: false,
+        beforePullUp: true,
         isPullUpLoad: false,
         pullUpDirty: true,
         pullDownStyle: '',
@@ -274,11 +277,17 @@
       position: relative;
       z-index: 1;
     }
+    .list-content {
+      position: relative;
+      z-index: 10;
+      background: #fff;
+    }
   }
   .pulldown-wrapper{
     position: absolute;
     width: 100%;
     left: 0;
+    top: -200px;
     display: flex;
     justify-content: center;
     align-items: center;
