@@ -28,7 +28,6 @@
 <script type="text/ecmascript-6">
   import Navbar from 'base/navbar/navbar'
   import { MessageBox, Toast } from 'mint-ui'
-  import {modifyPwd} from 'api/api'
 
   export default{
     name: 'modifyPassword',
@@ -109,13 +108,14 @@
           new_pwd: param.password1.trim(),
           customer_id: param.customer_id
         }
-        modifyPwd(this, passwordInfo).then(res => {
+        this.$http.modifyPwd(passwordInfo).then(res => {
           if (!res.ret) {
             MessageBox('提示', res.msg)
             return false
           }
           Toast({
-            message: '修改成功'
+            message: '修改成功',
+            duration: 1500
           })
           this.$router.push({
             path: `/mine`

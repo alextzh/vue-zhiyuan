@@ -28,7 +28,6 @@
   import Navbar from 'base/navbar/navbar'
   import {regexConfig} from 'common/js/util'
   import { MessageBox, Toast } from 'mint-ui'
-  import {userLogin} from 'api/api'
 
   export default{
     name: 'login',
@@ -83,7 +82,7 @@
           phone: param.mobile.trim(),
           pwd: param.password.trim()
         }
-        userLogin(this, userInfo).then(res => {
+        this.$http.userLogin(userInfo).then(res => {
           if (!res.ret) {
             MessageBox('提示', res.msg)
             return false
@@ -95,7 +94,8 @@
           }
           sessionStorage.setItem('userInfo', JSON.stringify(cInfo))
           Toast({
-            message: '登录成功'
+            message: '登录成功',
+            duration: 1500
           })
           this.$router.push({
             path: `/productList`

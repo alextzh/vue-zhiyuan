@@ -49,7 +49,6 @@
 <script type="text/ecmascript-6">
   import Scroll from 'base/scroll/scroll'
   import Navbar from 'base/navbar/navbar'
-  import {getPurchaseList} from 'api/api'
   import { MessageBox } from 'mint-ui'
   import {rendererZhMoneyWan, _normalizeDate} from 'common/js/util'
 
@@ -75,7 +74,7 @@
         pullUpLoadNoMoreTxt: '没有更多数据了',
         startY: 0,
         hasData: false,
-        hasMore: true
+        totalPage: 0
       }
     },
     computed: {
@@ -97,9 +96,11 @@
     },
     created() {
       this.getUserInfo()
-      this.$nextTick(() => {
+    },
+    mounted() {
+      setTimeout(() => {
         this._getPurchaseRecord()
-      })
+      }, 20)
     },
     methods: {
       back() {
@@ -123,42 +124,41 @@
       },
       _getPurchaseRecord() {
         this.pageData.page = 1
-        this.hasMore = true
-        getPurchaseList(this, this.pageData).then((res) => {
+        this.$http.getPurchaseList(this.pageData).then((res) => {
           if (!res.ret) {
             MessageBox('提示', res.msg)
             this.hasData = true
             return false
           }
-          let totalPage = res.obj.totalPage
+          this.totalPage = res.obj.totalPage
           let list = res.obj.list
           this.purchaseList = this._normalizeList(list)
-          if ((this.pageData.page + 1) > totalPage) {
-            this.hasMore = false
-          }
-          this.$nextTick(() => {
+          setTimeout(() => {
             this.$refs.scroll.forceUpdate()
-          })
+          }, 20)
         })
       },
       _getMorePurchaseRecord() {
         this.pageData.page = this.pageData.page + 1
-        getPurchaseList(this, this.pageData).then((res) => {
-          if (!res.ret) {
-            MessageBox('提示', res.msg)
-            this.hasData = true
-            return false
-          }
-          let totalPage = res.obj.totalPage
-          let list = res.obj.list
-          this.purchaseList = this.purchaseList.concat(this._normalizeList(list))
-          if ((this.pageData.page + 1) > totalPage) {
-            this.hasMore = false
-          }
-          this.$nextTick(() => {
+        if (this.pageData.page > this.totalPage) {
+          // 如果没有新数据
+          setTimeout(() => {
             this.$refs.scroll.forceUpdate()
+          }, 20)
+        } else {
+          this.$http.getPurchaseList(this.pageData).then((res) => {
+            if (!res.ret) {
+              MessageBox('提示', res.msg)
+              this.hasData = true
+              return false
+            }
+            let list = res.obj.list
+            this.purchaseList = this.purchaseList.concat(this._normalizeList(list))
+            setTimeout(() => {
+              this.$refs.scroll.forceUpdate()
+            }, 20)
           })
-        })
+        }
       },
       onPullingDown() {
         // 更新数据
@@ -166,10 +166,6 @@
       },
       onPullingUp() {
         // 加载更多数据
-        if (!this.hasMore) {
-          this.$refs.scroll.forceUpdate()
-          return false
-        }
         this._getMorePurchaseRecord()
       },
       _normalizeList(list) {
